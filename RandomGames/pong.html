@@ -1,0 +1,170 @@
+<html>
+<canvas id = "gameCanvas" width = "800" height = "600"> </canvas>
+
+<script>
+let canvas;
+let canvasContext;
+let ballX = 400;
+let ballY = 0;
+let ballVelocityX = 10;
+let ballVelocityY = 5;
+
+let playerScore = 0;
+let cpuScore = 0;
+const WINNING_SCORE = 5;
+let showingWinScreen = false;
+
+let paddleP1Y = 250;
+let paddleP2Y = 250;
+const PADDLE_HEIGHT = 85;
+const PADDLE_THICKNESS = 10;
+
+function calculateMousePos(evnt){
+  let rect = canvas.getBoundingClientRect();
+  let root = document.documentElement;
+  let mouseX = evnt.clientX - rect.left - root.scrollLeft;
+  let mouseY = evnt.clientY - rect.left - root.scrollLeft;
+  return{
+    x:mouseX,
+    y:mouseY
+  };
+
+}
+function handleMouseClick(evnt){
+  if(showingWinScreen){
+    playerScore = 0;
+    cpuScore = 0;
+    showingWinScreen = false;
+  }
+}
+window.onload = function(){
+  canvas = document.getElementById("gameCanvas");
+  canvasContext = canvas.getContext('2d');
+  let framesPerSecond = 60;
+  setInterval(function() {
+    moveEverything();
+    drawEverything();
+  }, 1000/framesPerSecond);
+  canvas.addEventListener("mousedown", handleMouseClick);
+  canvas.addEventListener("mousemove",
+            function(evnt){
+              let mousePos = calculateMousePos(evnt);
+              paddleP1Y = mousePos.y - (PADDLE_HEIGHT / 2);
+            });
+}
+
+function ballResetPlayerWin(){
+  if(playerScore >= WINNING_SCORE || cpuScore >= WINNING_SCORE){
+    showingWinScreen = true;
+  }
+  ballVelocityX = 5;//(Math.random() * 0);
+  ballVelocityY = -2.5;
+  ballX = canvas.width / 2;
+  ballY = 0;
+}
+
+function ballResetCPUWin(){
+  if(playerScore >= WINNING_SCORE || cpuScore >= WINNING_SCORE){
+    showingWinScreen = true;
+  }
+  ballVelocityX = -5;//(Math.random() * 0);
+  ballVelocityY = -2.5;
+  ballX = canvas.width / 2;
+  ballY = 0;
+}
+
+function computerMovement(){
+  let paddleP2YCenter = paddleP2Y + (PADDLE_HEIGHT / 2);
+  if(paddleP2YCenter < ballY - 35){
+    paddleP2Y += 6;
+  }
+  else if(paddleP2YCenter > ballY + 35){
+    paddleP2Y -= 6;
+  }
+}
+function moveEverything(){
+  if (showingWinScreen){
+    return
+  }
+  computerMovement();
+  ballX += ballVelocityX;
+  ballY += ballVelocityY;
+  if(ballX > canvas.width - PADDLE_THICKNESS){
+      if((ballY > paddleP2Y) && (ballY < paddleP2Y + PADDLE_HEIGHT)){
+        ballVelocityX = -((Math.random() * 1) + 9.5);
+        let deltaY = ballY - (paddleP2Y + PADDLE_HEIGHT / 2);
+        ballVelocityY = deltaY / 3;
+      }
+      else{
+        playerScore++; //must be before ballReset
+        ballResetPlayerWin();
+
+    }
+  }
+  if(ballX < 0 + PADDLE_THICKNESS){
+    if((ballY > paddleP1Y - 10) && (ballY < paddleP1Y + PADDLE_HEIGHT + 10)){
+      ballVelocityX = ((Math.random() * 1) + 9.5);
+      let deltaY = ballY - (paddleP1Y + PADDLE_HEIGHT / 2);
+      ballVelocityY = deltaY / 4;
+    }
+    else{
+      cpuScore++; //must be before ballReset
+      ballResetCPUWin();
+  }
+  }
+
+  if(ballY > canvas.height){
+    ballVelocityY = -ballVelocityY;
+  }
+  if(ballY < 0){
+    ballVelocityY = -ballVelocityY;
+  }
+}
+
+function drawNet(){
+  for(let i = 0; i < canvas.height; i += 40){
+    colorRect((canvas.width / 2) - 1, i, 2, 20, "white");
+  }
+}
+
+function drawEverything(){
+  colorRect(0, 0, canvas.width, canvas.height, "black"); //background
+  if (showingWinScreen){
+    canvasContext.fillStyle = "white";
+    if (playerScore >= WINNING_SCORE){
+      canvasContext.font = '48px serif';
+      canvasContext.fillText("Player Won!", canvas.width * .3500, canvas.height * .333);
+    }
+    else if (cpuScore >= WINNING_SCORE){
+      canvasContext.font = '48px serif';
+      canvasContext.fillText("CPU Won!", canvas.width * .3500, canvas.height * .333);
+    }
+    canvasContext.font = '48px serif';
+    canvasContext.fillText("Click to reset", canvas.width * .3500, canvas.height * .625);
+    return
+  }
+  drawNet();
+  colorRect(0, paddleP1Y, PADDLE_THICKNESS, PADDLE_HEIGHT, "white"); //left paddle (player)
+  colorRect(canvas.width - PADDLE_THICKNESS, paddleP2Y, PADDLE_THICKNESS, PADDLE_HEIGHT, "white"); //right paddle (cpu)
+
+  colorCircle(ballX, ballY, 10, "lime"); //ball
+
+  canvasContext.font = '48px sarif';
+  canvasContext.fillText(playerScore, canvas.width * .125, canvas.height * .166);
+  canvasContext.font = '48px sarif';
+  canvasContext.fillText(cpuScore, canvas.width * .875, canvas.height * .166);
+}
+
+function colorCircle(centerX, centerY, radius, drawColor){
+  canvasContext.fillStyle = drawColor;
+  canvasContext.beginPath();
+  canvasContext.arc(centerX, centerY, radius, 0, Math.PI * 2, true);
+  canvasContext.fill();
+
+}
+function colorRect(leftX, topY, width, height, drawColor){
+  canvasContext.fillStyle = drawColor;
+  canvasContext.fillRect(leftX, topY, width, height);
+}
+</script>
+</html>

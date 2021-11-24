@@ -1,0 +1,42 @@
+<html>
+Meme
+<canvas id = "carsonGame" width = "800" height = "600"> </canvas>
+
+<script>
+var score = 0;
+var lives = 5;
+var x = 250;
+var y = 250;
+var clicks = 0;
+setSize("carsonGame", x, y); onEvent("start_button", "click", function() {
+  setScreen("game_screen");
+setPosition("carsonGame", randomNumber(50,200), randomNumber(50, 300)); });
+onEvent("carsonGame", "click", function() {
+setPosition("carsonGame", randomNumber(50,200), randomNumber(50, 350)); playSound("sound://category_male_voiceover/correct_male.mp3", false); score = score + 100;
+setText("total_score", score);
+clicks = clicks + 1;
+setSize("carsonGame", x/(clicks + 1), y/(clicks + 1));
+});
+onEvent("backgroundGame", "click", function() {
+lives = lives - 1;
+setText("number_lives", lives); playSound("sound://category_male_voiceover/wrong_male.mp3", false); if (lives == 0) {
+setScreen("game_over_screen");
+} setText("yourscore", getNumber("total_score"));
+});
+onEvent("backgroundGame2", "click", function(event) {
+lives = lives - 1;
+setText("number_lives", lives); playSound("sound://category_male_voiceover/wrong_male.mp3", false); if (lives == 0) {
+setScreen("game_over_screen");
+} setText("yourscore", getNumber("total_score"));
+});
+onEvent("give_up", "click", function( ) {
+setScreen("game_over_screen");
+setText("yourscore", getNumber("total_score")); });
+onEvent("tryAgain_button", "click", function() { setScreen("welcome_screen"); stopSound("sound://category_male_voiceover/you_lose_male.mp3"); setText("number_lives", 5);
+  setSize("carsonGame", x, y);
+  setText("total_score", 0);
+  lives = 5;
+  clicks = 0;
+score = 0; });
+</script>
+</html>
